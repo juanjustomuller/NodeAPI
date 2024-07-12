@@ -1,82 +1,36 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const Product = require("./models/productModel");
+const productRoute = require("./routes/productRoute");
+const errorMiddleware = require("./middleware/errorMiddleware");
 const app = express();
+require('dotenv').config()
+
+const MONGO_URL = process.env.MONGO_URL
+const PORT = process.env.PORT || 3000
 
 app.use(express.json())
 
 //routes
-app.get("/", (req, res) => {
-  res.send("Hola NodeApi");
-});
+app.use('/api/products', productRoute);
 
-app.get("/products", async (req, res) => {
-    try {
-        const products = await Product.find({}) //si lo pongo vacio me trae todo
-        res.status(200).json(products)
-    } catch (error) {
-        res.status(500).json({message: error.message})
-    }
-})
+// app.get('/', (req, res) => {
+//     res.send("Hello NodeAPI");
+// })
 
-app.get("/products/:id", async (req, res) => {
-    try {
-        const {id} = req.params
-        const product = await Product.findById(id)
-        res.status(200).json(product)
-    } catch (error) {
-        res.status(500).json({message: error.message})
-    }
-})
+app.use(errorMiddleware)
 
-app.post("/products", async (req, res) => {
-    try {
-        const products = await Product.create(req.body)
-        res.status(200).json(products);
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({message: error.message})
-    }
-})
-
-app.put("/products/:id", async (req, res) => {
-    try {
-        const {id} = req.params
-        const product = await Product.findByIdAndUpdate(id, req.body) //primer parametro el id, y segundo la informacion del cliente que viene en req.body
-        //no podemos encontrar el producto para actualizar en la base de datos
-        if(!product){
-            return res.status(404).json({message: `No podemos encontrar el producto con ID: ${id}`})
-        }
-        const updatedProduct = await Product.findById(id)
-        res.status(200).json(updatedProduct)
-    } catch (error) {
-        res.status(500).json({message: error.message})
-    }
-})
-
-app.delete("/products/:id", async(req, res) => {
-    try {
-        const {id} = req.params
-        const product = await Product.findByIdAndDelete(id)
-        if(!product){
-            res.status(404).json({message: `No podemos encontrar el producto con ID: ${id}`})
-        }
-        res.status(200).json(product)
-    } catch (error) {
-        res.status(500).json({message: error.message})
-    }
-})
 
 mongoose
-  .connect(
-    "mongodb+srv://juanjustomuller:programacion2024@nodeapi.0pvngbb.mongodb.net/?retryWrites=true&w=majority&appName=NodeAPI"
-  )
+  .connect(MONGO_URL)
   .then(() => {
     console.log("conectado a MongoDB");
-    app.listen(3000, () => {
-      console.log("El NodeApi server esta corriendo en el puerto 3000");
+    app.listen(PORT, () => {
+      console.log(`El NodeApi server esta corriendo en el puerto ${PORT}`);
     });
   })
   .catch((error) => {
     console.log(error);
   });
+
+
+  //Arquitectura MVC

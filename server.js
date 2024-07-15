@@ -3,11 +3,19 @@ const mongoose = require("mongoose");
 const productRoute = require("./routes/productRoute");
 const errorMiddleware = require("./middleware/errorMiddleware");
 const app = express();
+const cors = require('cors')
 require('dotenv').config()
 
 const MONGO_URL = process.env.MONGO_URL
 const PORT = process.env.PORT || 3000
+const FRONTEND = process.env.FRONTEND
+//para que solo la ruta del frontend acceda al back, tmb se puede borrar y dejar solo el cors, para que cualquier ruta acceda al back
+var corsOptions = {
+  origin: FRONTEND,
+  optionsSuccessStatus: 200 
+}
 
+app.use(cors(corsOptions))
 app.use(express.json())
 
 //routes
